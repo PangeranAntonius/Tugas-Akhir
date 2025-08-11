@@ -171,16 +171,31 @@ void setup() {
 }
 
 
-// --- FUNGSI LOOP YANG DIPERBAIKI ---
+// --- FUNGSI LOOP ---
 void loop() {
-  int analogValue = analogRead(MQ135_PIN);
-  float ppmValue = convertToRange(analogValue);
+  // Langkah 1: Baca PPM aktual dari sensor menggunakan rumus
+  float actual_ppm = readCOppm();
+  String status; // Variabel untuk menyimpan status akhir
 
-  fuzzySystem->setInput(1, ppmValue);
-  fuzzySystem->fuzzify();
-  float airQualityIndex = fuzzySystem->defuzzify(1);
-  String status = getAirQualityStatus(airQualityIndex);
+  // Langkah 2: Terapkan logika untuk validasi dan klasifikasi
+  if (actual_ppm < 0) {
+    status = "TIDAK VALID";
+  } 
+  else if (actual_ppm > 200) {
+    status = "S. BURUK"; // Langsung set status tanpa fuzzy
+  } 
+  else {
+    // Proses dengan Fuzzy Logic hanya untuk rentang 0-200
+    fuzzySystem->setInput(1, actual_ppm);
+    fuzzySystem->fuzzify();
+    float airQualityIndex = fuzzySystem->defuzzify(1);
+    status = getAirQualityStatus(airQualityIndex);
+  }
   
+  // Menampilkan hasil ke Serial Monitor
+  Serial.print("CO (ppm): "); Serial.print(actual_ppm);
+  Serial.print(" | Status: "); Serial.println(status);
+
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("PPM: ");
@@ -194,7 +209,7 @@ void loop() {
     triggerBuzzer();
   }
   
-  // --- Bagian Pengiriman Data yang Diperbaiki ---
+  // --- Bagian Pengiriman Data ---
   if (is_gprs_connected()) {
     // 1. Buat string JSON yang hanya berisi data intinya
     String jsonData = "{";
