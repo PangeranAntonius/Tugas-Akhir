@@ -49,7 +49,7 @@ void init_gsm();
 void gprs_connect();
 boolean gprs_disconnect();
 boolean is_gprs_connected();
-void update_firebase(String path, String data); // Diubah dari post_to_firebase
+void update_firebase(String path, String data); 
 boolean waitResponse(String expected_answer = "OK", unsigned int timeout = 2000);
 void check_voltage();
 void triggerBuzzer();
@@ -72,35 +72,34 @@ void triggerBuzzer() {
 
 // Fuzzy system setup
 void setupFuzzySystem(){
-  // INPUT: Range ppm CO (kini hingga >200)
+  // INPUT: Range ppm CO (0-200)
   FuzzyInput* pollutionInput = new FuzzyInput(1);
+
   
   // Himpunan fuzzy yang sudah ada
-  FuzzySet* lowPollution = new FuzzySet(0, 0, 50, 50);      // 0-50 ppm (BAIK)
-  FuzzySet* mediumPollution = new FuzzySet(51, 51, 100, 100);  // 51-100 ppm (SEDANG)
-  FuzzySet* highPollution = new FuzzySet(101, 101, 200, 200);   // 101-200 ppm (BURUK)
-  FuzzySet* veryHighPollution = new FuzzySet(201, 201, 1000, 1000); // >200 ppm (SANGAT BURUK)
+  FuzzySet* lowPollution    = new FuzzySet(0, 30, 30, 50);    // Trapesium Kiri untuk BAIK
+  FuzzySet* mediumPollution = new FuzzySet(50, 75, 75, 100);   // Segitiga untuk SEDANG
+  FuzzySet* highPollution   = new FuzzySet(100, 115, 200, 200);  // Trapesium Kanan untuk BURUK
 
   pollutionInput->addFuzzySet(lowPollution);
   pollutionInput->addFuzzySet(mediumPollution);
   pollutionInput->addFuzzySet(highPollution);
-  pollutionInput->addFuzzySet(veryHighPollution);
   fuzzySystem->addFuzzyInput(pollutionInput);
+
   
   // OUTPUT
   FuzzyOutput* airQuality = new FuzzyOutput(1);
   
   // Himpunan fuzzy output yang sudah ada
-  FuzzySet* good = new FuzzySet(0, 0, 50, 50);
-  FuzzySet* moderate = new FuzzySet(51, 51, 100, 100);
-  FuzzySet* poor = new FuzzySet(101, 101, 200, 200);
-  FuzzySet* veryPoor = new FuzzySet(201, 201, 1000, 1000); 
-  
+  FuzzySet* good     = new FuzzySet(0, 30, 30, 50);
+  FuzzySet* moderate = new FuzzySet(50, 75, 75, 100);
+  FuzzySet* poor     = new FuzzySet(100, 115, 200, 200);
+
   airQuality->addFuzzySet(good);
   airQuality->addFuzzySet(moderate);
   airQuality->addFuzzySet(poor);
-  airQuality->addFuzzySet(veryPoor);
   fuzzySystem->addFuzzyOutput(airQuality);
+
 
   // Fuzzy rules (Aturan yang sudah ada)
   FuzzyRuleAntecedent* ifLow = new FuzzyRuleAntecedent();
@@ -124,26 +123,15 @@ void setupFuzzySystem(){
   FuzzyRule* rule3 = new FuzzyRule(3, ifHigh, thenPoor);
   fuzzySystem->addFuzzyRule(rule3);
 
-  FuzzyRuleAntecedent* ifVeryHigh = new FuzzyRuleAntecedent(); 
-  ifVeryHigh->joinSingle(veryHighPollution); 
-  FuzzyRuleConsequent* thenVeryPoor = new FuzzyRuleConsequent(); 
-  thenVeryPoor->addOutput(veryPoor); 
-  FuzzyRule* rule4 = new FuzzyRule(4, ifVeryHigh, thenVeryPoor); 
-  fuzzySystem->addFuzzyRule(rule4); 
 }
 
 // Fungsi status (TANPA PERUBAHAN)
-String getAirQualityStatus(float aqi) {
-  if (aqi <= 50) {
-    return "BAIK";
-  } else if (aqi <= 100) {
-    return "SEDANG";
-  } else if (aqi <= 200) {
-    return "BURUK";
-  } else {
-    return "S. BURUK"; //
-  }
+String getAirQualityStatus(float crispValue) {
+  if (crispValue <= 50) return "BAIK";
+  else if (crispValue <= 100) return "SEDANG";
+  else return "BURUK";
 }
+
 
 void setup() {
   Serial.begin(115200);
