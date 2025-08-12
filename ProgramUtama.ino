@@ -77,9 +77,9 @@ void setupFuzzySystem(){
 
   
   // Himpunan fuzzy yang sudah ada
-  FuzzySet* lowPollution    = new FuzzySet(0, 30, 30, 50);    // Trapesium Kiri untuk BAIK
-  FuzzySet* mediumPollution = new FuzzySet(50, 75, 75, 100);   // Segitiga untuk SEDANG
-  FuzzySet* highPollution   = new FuzzySet(100, 115, 200, 200);  // Trapesium Kanan untuk BURUK
+  FuzzySet* lowPollution    = new FuzzySet(0, 0, 30, 50);    
+  FuzzySet* mediumPollution = new FuzzySet(40, 60, 80, 100);  
+  FuzzySet* highPollution   = new FuzzySet(90, 120, 200, 200);
 
   pollutionInput->addFuzzySet(lowPollution);
   pollutionInput->addFuzzySet(mediumPollution);
@@ -91,9 +91,9 @@ void setupFuzzySystem(){
   FuzzyOutput* airQuality = new FuzzyOutput(1);
   
   // Himpunan fuzzy output yang sudah ada
-  FuzzySet* good     = new FuzzySet(0, 30, 30, 50);
-  FuzzySet* moderate = new FuzzySet(50, 75, 75, 100);
-  FuzzySet* poor     = new FuzzySet(100, 115, 200, 200);
+  FuzzySet* good     = new FuzzySet(0, 0, 30, 50);
+  FuzzySet* moderate = new FuzzySet(40, 60, 80, 100);
+  FuzzySet* poor     = new FuzzySet(90, 120, 200, 200);
 
   airQuality->addFuzzySet(good);
   airQuality->addFuzzySet(moderate);
